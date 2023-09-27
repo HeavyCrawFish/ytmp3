@@ -18,6 +18,7 @@ function App() {
   const [response, setResponse] = useState(null);
   const [disabled, setDisabled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [msg, setMsg] = useState("");
 
   useEffect(() => {
     if (response) {
@@ -28,18 +29,28 @@ function App() {
   const handleDownload = async (e) => {
     e.preventDefault();
     if (link === "") {
-      console.log("Please provide a link!");
+      await setMsg("Please provide a link!");
+      await setLink("");
+      await setOpen(true);
+    } else if (!link.includes("=")) {
+      await setMsg("Wrong link!");
+      await setLink("");
+      await setOpen(true);
     } else {
       const text = link.split("=")[1];
       if (text) {
         let interval = setInterval(async function () {
-          setDisabled(true);
-          setOpen(true);
+          await setDisabled(true);
+          await setMsg("Downloading");
+          await setOpen(true);
+
+          //api call
           const res = await fetch(text);
 
           if (res.status === 200 && res.data.status === "ok") {
             setDisabled(false);
-            setResponse(res.data);
+            await setResponse(res.data);
+            await setLink("");
             clearInterval(interval);
           } else if (res.status === 200 && res.data.status === "fail") {
             setDisabled(false);
@@ -52,7 +63,6 @@ function App() {
   };
 
   const handleClose = (e) => {
-    e.preventDefault();
     setOpen(false);
   };
 
@@ -60,8 +70,8 @@ function App() {
     <div className="App">
       <div className="navbar">
         <AppBar>
-          <Toolbar>
-            <Typography variant="h4">
+          <Toolbar sx={{ display: "flex", justifyContent: "center" }}>
+            <Typography variant="h5">
               <b>Youtube to mp3 Converter</b>
             </Typography>
           </Toolbar>
@@ -73,13 +83,24 @@ function App() {
             mt: "10rem",
             p: "2rem",
             height: "50vh",
+            width: {
+              xs: "20rem",
+              sm: "30rem",
+              md: "40rem",
+              lg: "50rem",
+            },
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-evenly",
           }}
           elevation={5}
         >
-          <Typography>Paste your link below</Typography>
+          <Typography
+            variant="h6"
+            sx={{ display: "flex", justifyContent: "center" }}
+          >
+            Paste your link below
+          </Typography>
           <TextField
             type="text"
             variant="outlined"
@@ -96,8 +117,18 @@ function App() {
           >
             Download
           </Button>
-          <Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
-            <Alert onClose={handleClose} severity={"success"} />
+          <Snackbar
+            open={open}
+            autoHideDuration={5000}
+            onClose={handleClose}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert
+              onClose={handleClose}
+              severity={msg.includes("success") ? "success" : "error"}
+            >
+              {msg}
+            </Alert>
           </Snackbar>
         </Paper>
       </div>
