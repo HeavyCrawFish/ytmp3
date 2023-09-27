@@ -23,6 +23,9 @@ function App() {
   useEffect(() => {
     if (response) {
       window.location.href = response.link;
+      setResponse(null);
+    } else {
+      setResponse(null);
     }
   }, [response]);
 
@@ -48,14 +51,17 @@ function App() {
           const res = await fetch(text);
 
           if (res.status === 200 && res.data.status === "ok") {
-            setDisabled(false);
+            await setDisabled(false);
             await setResponse(res.data);
+            await setOpen(false);
             await setLink("");
             clearInterval(interval);
           } else if (res.status === 200 && res.data.status === "fail") {
-            setDisabled(false);
-            setResponse(res);
-            clearInterval(interval);
+            await setDisabled(false);
+            await setResponse(res);
+            await setOpen(false);
+            await setLink("");
+            await clearInterval(interval);
           }
         }, 1000);
       }
@@ -119,13 +125,13 @@ function App() {
           </Button>
           <Snackbar
             open={open}
-            autoHideDuration={5000}
+            autoHideDuration={4000}
             onClose={handleClose}
             anchorOrigin={{ vertical: "top", horizontal: "center" }}
           >
             <Alert
               onClose={handleClose}
-              severity={msg.includes("success") ? "success" : "error"}
+              severity={msg.includes("Downloading") ? "success" : "error"}
             >
               {msg}
             </Alert>
