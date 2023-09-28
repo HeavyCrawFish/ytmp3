@@ -10,9 +10,14 @@ body {
 
 .form {
   display: flex;
+  flex-direction: column;
   justify-content: center;
 }
 
+.file_download {
+  display: flex;
+  justify-content: center;
+}
 
 
 

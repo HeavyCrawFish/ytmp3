@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetch } from "./services/AxiosRequest";
+import { saveAs } from "file-saver";
 
 import "./App.css";
 import {
@@ -12,60 +13,30 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
+import axios from "axios";
 
 function App() {
   const [link, setLink] = useState("");
-  const [response, setResponse] = useState(null);
-  const [disabled, setDisabled] = useState(false);
+  const [data, setData] = useState([{}]);
   const [open, setOpen] = useState(false);
-  const [msg, setMsg] = useState("");
 
-  useEffect(() => {
-    if (response) {
-      window.location.href = response.link;
-      setResponse(null);
-    } else {
-      setResponse(null);
-    }
-  }, [response]);
+  const handleConvert = async (e) => {
+    await axios
+      .get(`https://flask-ytmp3-backend.onrender.com/convert?link=${link}`)
+      .then((res) => {
+        setOpen(true);
+        setData(res.data);
+        console.log(res.data);
+      });
+  };
 
   const handleDownload = async (e) => {
     e.preventDefault();
-    if (link === "") {
-      await setMsg("Please provide a link!");
-      await setLink("");
-      await setOpen(true);
-    } else if (!link.includes("=")) {
-      await setMsg("Wrong link!");
-      await setLink("");
-      await setOpen(true);
-    } else {
-      const text = link.split("=")[1];
-      if (text) {
-        let interval = setInterval(async function () {
-          await setDisabled(true);
-          await setMsg("Downloading");
-          await setOpen(true);
-
-          //api call
-          const res = await fetch(text);
-
-          if (res.status === 200 && res.data.status === "ok") {
-            await setDisabled(false);
-            await setResponse(res.data);
-            await setOpen(false);
-            await setLink("");
-            clearInterval(interval);
-          } else if (res.status === 200 && res.data.status === "fail") {
-            await setDisabled(false);
-            await setResponse(res);
-            await setOpen(false);
-            await setLink("");
-            await clearInterval(interval);
-          }
-        }, 1000);
-      }
-    }
+    setLink("");
+    setData([{}]);
+    saveAs(
+      `https://flask-ytmp3-backend.onrender.com/getfiles?file_name=${data.name}`
+    );
   };
 
   const handleClose = (e) => {
@@ -116,27 +87,38 @@ function App() {
             }}
             value={link}
           />
-          <Button
-            variant="contained"
-            onClick={handleDownload}
-            disabled={disabled ? true : false}
-          >
-            Download
+          <Button variant="contained" onClick={handleConvert}>
+            Convert
           </Button>
           <Snackbar
             open={open}
             autoHideDuration={4000}
             onClose={handleClose}
+            message={data.msg}
             anchorOrigin={{ vertical: "top", horizontal: "center" }}
           >
             <Alert
               onClose={handleClose}
-              severity={msg.includes("Downloading") ? "success" : "error"}
+              severity={data.code === "failed" ? "error" : "success"}
+              sx={{ width: "100%" }}
             >
-              {msg}
+              {data.msg}
             </Alert>
           </Snackbar>
         </Paper>
+        <div className="file_download">
+          {data.name === undefined ? (
+            <div></div>
+          ) : (
+            <Button
+              variant="contained"
+              sx={{ mt: "5rem", maxWidth: "20rem" }}
+              onClick={handleDownload}
+            >
+              Download
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
