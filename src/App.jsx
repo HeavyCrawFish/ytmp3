@@ -5,7 +5,9 @@ import "./App.css";
 import {
   Alert,
   AppBar,
+  Backdrop,
   Button,
+  CircularProgress,
   Paper,
   Snackbar,
   TextField,
@@ -16,15 +18,22 @@ import axios from "axios";
 
 function App() {
   const [link, setLink] = useState("");
+  const [disabled, setDisabled] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState([{}]);
   const [open, setOpen] = useState(false);
 
   const handleConvert = async (e) => {
+    await setData([{}]);
+    await setDisabled(true);
+    await setLoading(true);
     await axios
       .get(`https://flask-ytmp3-backend.onrender.com/convert?link=${link}`)
-      .then((res) => {
-        setOpen(true);
-        setData(res.data);
+      .then(async (res) => {
+        await setOpen(true);
+        await setLoading(false);
+        await setDisabled(false);
+        await setData(res.data);
       });
   };
 
@@ -85,7 +94,11 @@ function App() {
             }}
             value={link}
           />
-          <Button variant="contained" onClick={handleConvert}>
+          <Button
+            variant="contained"
+            onClick={handleConvert}
+            disabled={disabled ? true : false}
+          >
             Convert
           </Button>
           <Snackbar
@@ -105,6 +118,14 @@ function App() {
           </Snackbar>
         </Paper>
         <div className="file_download">
+          {loading ? (
+            <CircularProgress
+              color="inherit"
+              sx={{ mt: "5rem", maxWidth: "20rem" }}
+            />
+          ) : (
+            <div></div>
+          )}
           {data.name === undefined ? (
             <div></div>
           ) : (
