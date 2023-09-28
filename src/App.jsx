@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { fetch } from "./services/AxiosRequest";
+import { useState } from "react";
 import { saveAs } from "file-saver";
 
 import "./App.css";
