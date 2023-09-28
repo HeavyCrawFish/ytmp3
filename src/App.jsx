@@ -25,7 +25,6 @@ function App() {
       .then((res) => {
         setOpen(true);
         setData(res.data);
-        console.log(res.data);
       });
   };
 
